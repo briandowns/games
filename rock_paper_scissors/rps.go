@@ -30,6 +30,9 @@ const (
 	win
 )
 
+var compStr string
+var err error
+var compAnswer int
 var givenAnswer int
 var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
@@ -74,14 +77,23 @@ func (g *game) genStats() {
 }
 
 // genComputerAnswer will randomly generate a number used as an answer
-func genComputerAnswer() int {
+func genComputerAnswer() (int, string, error) {
 	rand.Seed(time.Now().UTC().UnixNano())
-	return rand.Intn(3)
+	a := rand.Intn(3)
+	switch {
+	case a == 0:
+		return a, "rock", nil
+	case a == 1:
+		return a, "paper", nil
+	case a == 2:
+		return a, "scissors", nil
+	}
+	return 127, "", fmt.Errorf("unknown value")
 }
 
 func main() {
 	clearScreen()
-	fmt.Print("+ Rock-Paper-Scissors (Enter 0 for ROCK, 1 for PAPER, and 2 for SCISSORS)\n\n")
+	fmt.Print("+ Rock-Paper-Scissors (Enter 0 for ROCK, 1 for PAPER, and 2 for SCISSORS)\n")
 	g := game{
 		attempts: 0,
 		results:  make([]int, 0),
@@ -94,7 +106,7 @@ func main() {
 		}
 	}()
 	for {
-		fmt.Print("Enter answer: ")
+		fmt.Print("\nEnter answer: ")
 		fmt.Scanf("%d", &givenAnswer)
 		if !checkValidAnswer(&givenAnswer) {
 			fmt.Println("invalid answer, try again")
@@ -102,17 +114,21 @@ func main() {
 		}
 		g.attempts = g.attempts + 1
 		g.pAnswer = &givenAnswer
-		g.cAnswer = genComputerAnswer()
+		if compAnswer, compStr, err = genComputerAnswer(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		g.cAnswer = compAnswer
 		switch {
 		case g.cAnswer%3+1 == *g.pAnswer:
 			g.results = append(g.results, win)
-			fmt.Println("Win")
+			fmt.Printf("Computer: %s  WIN!\n", compStr)
 		case *g.pAnswer%3+1 == g.cAnswer:
 			g.results = append(g.results, lose)
-			fmt.Println("lose")
+			fmt.Printf("Computer: %s  LOSE\n", compStr)
 		default:
 			g.results = append(g.results, tie)
-			fmt.Println("tie")
+			fmt.Printf("Computer: %s  TIE\n", compStr)
 		}
 	}
 }
