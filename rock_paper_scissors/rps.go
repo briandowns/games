@@ -30,7 +30,6 @@ const (
 	win
 )
 
-var player string
 var givenAnswer int
 var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
