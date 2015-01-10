@@ -97,13 +97,13 @@ func main() {
 		g.cAnswer = genComputerAnswer()
 		switch {
 		case g.cAnswer%3+1 == *g.pAnswer:
-			g.results = append(g.results, 2)
+			g.results = append(g.results, win)
 			fmt.Println("Win")
 		case *g.pAnswer%3+1 == g.cAnswer:
-			g.results = append(g.results, 0)
+			g.results = append(g.results, lose)
 			fmt.Println("lose")
 		default:
-			g.results = append(g.results, 1)
+			g.results = append(g.results, tie)
 			fmt.Println("tie")
 		}
 	}
