@@ -17,34 +17,33 @@ const (
 
 var player string
 var givenAnswer int
-var signalChan = make(chan os.Signal, 1)
+var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
+// game holds the data collected during game play
 type game struct {
-	attempts int
-	player   string
-	pAnswer  *int
-	cAnswer  int
-	results  []int
+	attempts int    // track how many rounds played
+	player   string // player name
+	pAnswer  *int   // pointer to given answer
+	cAnswer  int    // computer's answer
+	results  []int  // array to hold wins, loses, and ties
 }
 
+// checkValidAnswer makes sure the given answer is valid
 func checkValidAnswer(pa *int) bool {
 	if *pa == lose || *pa == tie || *pa == win {
 		return true
 	}
-	/*
-		if *pa > 0 && *pa <= 2 {
-			return true
-		}
-	*/
 	return false
 }
 
+// clearScreen runs a shell clear command
 func clearScreen() {
 	c := exec.Command("clear")
 	c.Stdout = os.Stdout
 	c.Run()
 }
 
+// genStats outputs the game play statistics
 func (g *game) genStats() {
 	var wins, loses, ties int
 	for _, i := range g.results {
@@ -59,17 +58,18 @@ func (g *game) genStats() {
 	}
 	fmt.Printf("\n\n%s, here are your stats...\n", g.player)
 	fmt.Printf("Rounds: %d, Wins: %d, Loses: %d, Ties: %d\n\n", len(g.results), wins, loses, ties)
-	os.Exit(1)
+	os.Exit(1) // Since it was a ctrl-c, exit non-zero
 }
 
-func genAnswer() int {
+// genComputerAnswer will randomly generate a number used as an answer
+func genComputerAnswer() int {
 	rand.Seed(time.Now().UTC().UnixNano())
 	return rand.Intn(3)
 }
 
 func main() {
 	clearScreen()
-	fmt.Println("Rock-Paper-Scissors")
+	fmt.Print("+ Rock-Paper-Scissors +\n\n")
 	fmt.Println("Enter 0 for rock, 1 for paper, and 2 for scissors")
 	fmt.Print("Enter your name: ")
 	fmt.Scanf("%s", &player)
@@ -79,6 +79,7 @@ func main() {
 		results:  make([]int, 0),
 	}
 	signal.Notify(signalChan, os.Interrupt)
+	// setup go routine to catch a ctrl-c
 	go func() {
 		for range signalChan {
 			g.genStats()
@@ -93,7 +94,7 @@ func main() {
 		}
 		g.attempts = g.attempts + 1
 		g.pAnswer = &givenAnswer
-		g.cAnswer = genAnswer()
+		g.cAnswer = genComputerAnswer()
 		switch {
 		case g.cAnswer%3+1 == *g.pAnswer:
 			g.results = append(g.results, 2)
@@ -106,5 +107,4 @@ func main() {
 			fmt.Println("tie")
 		}
 	}
-	os.Exit(0)
 }
