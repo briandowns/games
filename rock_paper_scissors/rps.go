@@ -1,3 +1,18 @@
+// Copyright 2015 Brian J. Downs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This is a basic implementation of the game rock, paper, scissors.
 package main
 
 import (
@@ -21,11 +36,10 @@ var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
 // game holds the data collected during game play
 type game struct {
-	attempts int    // track how many rounds played
-	player   string // player name
-	pAnswer  *int   // pointer to given answer
-	cAnswer  int    // computer's answer
-	results  []int  // array to hold wins, loses, and ties
+	attempts int   // track how many rounds played
+	pAnswer  *int  // pointer to given answer
+	cAnswer  int   // computer's answer
+	results  []int // array to hold wins, loses, and ties
 }
 
 // checkValidAnswer makes sure the given answer is valid
@@ -56,8 +70,7 @@ func (g *game) genStats() {
 			ties++
 		}
 	}
-	fmt.Printf("\n\n%s, here are your stats...\n", g.player)
-	fmt.Printf("Rounds: %d, Wins: %d, Loses: %d, Ties: %d\n\n", len(g.results), wins, loses, ties)
+	fmt.Printf("\n\nRounds: %d, Wins: %d, Loses: %d, Ties: %d\n\n", len(g.results), wins, loses, ties)
 	os.Exit(1) // Since it was a ctrl-c, exit non-zero
 }
 
@@ -69,12 +82,8 @@ func genComputerAnswer() int {
 
 func main() {
 	clearScreen()
-	fmt.Print("+ Rock-Paper-Scissors +\n\n")
-	fmt.Println("Enter 0 for rock, 1 for paper, and 2 for scissors")
-	fmt.Print("Enter your name: ")
-	fmt.Scanf("%s", &player)
+	fmt.Print("+ Rock-Paper-Scissors (Enter 0 for ROCK, 1 for PAPER, and 2 for SCISSORS)\n\n")
 	g := game{
-		player:   player,
 		attempts: 0,
 		results:  make([]int, 0),
 	}
