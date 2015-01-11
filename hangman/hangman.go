@@ -16,15 +16,29 @@ package main
 
 import (
 	"bufio"
-	"byte"
+	"bytes"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
+	"os/exec"
+	"os/signal"
 	"time"
 )
 
 const wordsLocation = "/usr/share/dict/words"
+
+var err error
+var foundWord string
+var wordLength int
+var gameWord string
+var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
+
+// clearScreen runs a shell clear command
+func clearScreen() {
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
+}
 
 type game struct {
 	word    string
@@ -41,14 +55,15 @@ func (g *game) genStats() {
 		guesses.Write([]byte(fmt.Sprintf("%s, ", v)))
 	}
 	fmt.Printf("Guesses: %d, Guessed: %s", guessCount, guesses.String())
+	os.Exit(1)
 }
 
 // selectWord will search the installed dictionary for a word that meets
 // the length criteria
-func selectWord(length int) string {
+func selectWord(length int) (string, error) {
 	file, err := os.Open(wordsLocation)
 	if err != nil {
-		log.Fatalln(err)
+		return "", err
 	}
 	defer file.Close()
 	var words []string
@@ -59,10 +74,50 @@ func selectWord(length int) string {
 			words = append(words, scanner.Text())
 		}
 	}
-	return words[rand.Intn(len(words))]
+	return words[rand.Intn(len(words))], nil
+}
+
+func (g *game) setup() {
+	fmt.Print("  Press 0 to enter your own word or 1 to generate one: ")
+	var wordSetupAnswer int
+	fmt.Scanf("%d", &wordSetupAnswer)
+	for {
+		switch {
+		case wordSetupAnswer == 0:
+			fmt.Print("  Enter word: ")
+			fmt.Scanf("%s", &gameWord)
+			g.word = gameWord
+			fmt.Println(g.word)
+			break
+		case wordSetupAnswer == 1:
+			fmt.Print("  Enter length of word: ")
+			fmt.Scanf("%d", &wordLength)
+			if foundWord, err = selectWord(wordLength); err != nil {
+				fmt.Println(err)
+				continue
+			}
+			g.word = foundWord
+			fmt.Println(g.word)
+			break
+		default:
+			fmt.Println("  not a valid entry.  Try again.")
+			break
+		}
+		break
+	}
 }
 
 func main() {
-	//x := hangman{}
-	fmt.Println(selectWord(5))
+	clearScreen()
+	fmt.Print("+ Hangman\n")
+	g := game{}
+	signal.Notify(signalChan, os.Interrupt)
+	// setup go routine to catch a ctrl-c
+	go func() {
+		for range signalChan {
+			g.genStats()
+		}
+	}()
+	g.setup()
+	os.Exit(0)
 }
