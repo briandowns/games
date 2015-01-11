@@ -16,6 +16,7 @@ package main
 
 import (
 	"bufio"
+	"byte"
 	"fmt"
 	"log"
 	"math/rand"
@@ -25,14 +26,21 @@ import (
 
 const wordsLocation = "/usr/share/dict/words"
 
-type hangman struct {
-	word   string
-	length int
+type game struct {
+	word    string
+	guessed map[int]string
 }
 
-type player struct {
-	guesses int
-	guessed []string
+func (g *game) wordLength() int { return len(g.word) }
+
+func (g *game) genStats() {
+	var guessCount int
+	var guesses bytes.Buffer
+	for _, v := range g.guessed {
+		guessCount++
+		guesses.Write([]byte(fmt.Sprintf("%s, ", v)))
+	}
+	fmt.Printf("Guesses: %d, Guessed: %s", guessCount, guesses.String())
 }
 
 // selectWord will search the installed dictionary for a word that meets
