@@ -87,7 +87,6 @@ func (g *game) setup() {
 			fmt.Print("  Enter word: ")
 			fmt.Scanf("%s", &gameWord)
 			g.word = gameWord
-			fmt.Println(g.word)
 			break
 		case wordSetupAnswer == 1:
 			fmt.Print("  Enter length of word: ")
@@ -97,7 +96,6 @@ func (g *game) setup() {
 				continue
 			}
 			g.word = foundWord
-			fmt.Println(g.word)
 			break
 		default:
 			fmt.Println("  not a valid entry.  Try again.")
