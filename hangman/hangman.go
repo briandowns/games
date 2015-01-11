@@ -1,4 +1,4 @@
-// Copyright 2014 Brian J. Downs
+// Copyright 2015 Brian J. Downs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@ package main
 
 import (
 	"bufio"
-	"crypto/rand"
 	"fmt"
 	"log"
-	"math/big"
+	"math/rand"
 	"os"
+	"time"
 )
 
-const (
-	wordsLocation = "/usr/share/dict/words"
-)
+const wordsLocation = "/usr/share/dict/words"
 
 type hangman struct {
 	word   string
@@ -37,35 +35,26 @@ type player struct {
 	guessed []string
 }
 
-//func (h *hangman) String() string {}
-//func (p *player) String() string  {}
-
 // selectWord will search the installed dictionary for a word that meets
 // the length criteria
-func (h *hangman) selectWord(length int) {
+func selectWord(length int) string {
 	file, err := os.Open(wordsLocation)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer file.Close()
-
 	var words []string
+	rand.Seed(time.Now().UTC().UnixNano())
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if len(scanner.Text()) == length {
 			words = append(words, scanner.Text())
 		}
 	}
-	max := *big.NewInt(int64(len(words)))
-	n, err := rand.Int(rand.Reader, &max)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	h.word = words[int(n)]
+	return words[rand.Intn(len(words))]
 }
 
 func main() {
-	x := hangman{}
-	x.selectWord(5)
-	fmt.Println(x.word)
+	//x := hangman{}
+	fmt.Println(selectWord(5))
 }
