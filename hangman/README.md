@@ -1,13 +1,2 @@
 # Hangman
 
-## Options
-
-*
-*
-*
-
-## Rules
-
-*
-*
-*
