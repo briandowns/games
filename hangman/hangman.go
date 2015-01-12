@@ -41,8 +41,9 @@ func clearScreen() {
 }
 
 type game struct {
-	word    string
-	guessed map[int]string
+	word      string
+	guessed   map[int]string
+	blankWord string
 }
 
 func (g *game) wordLength() int { return len(g.word) }
@@ -54,7 +55,7 @@ func (g *game) genStats() {
 		guessCount++
 		guesses.Write([]byte(fmt.Sprintf("%s, ", v)))
 	}
-	fmt.Printf("Guesses: %d, Guessed: %s", guessCount, guesses.String())
+	fmt.Printf("\nGuesses: %d, Guessed: %s", guessCount, guesses.String())
 	os.Exit(1)
 }
 
@@ -105,9 +106,17 @@ func (g *game) setup() {
 	}
 }
 
+func (g *game) genBlankWord() {
+	var preBlank bytes.Buffer
+	for i := 0; i <= g.wordLength(); i++ {
+		preBlank.Write([]byte("_ "))
+	}
+	g.blankWord = preBlank.String()
+}
+
 func main() {
 	clearScreen()
-	fmt.Print("+ Hangman\n")
+	fmt.Println("+ Hangman +")
 	g := game{}
 	signal.Notify(signalChan, os.Interrupt)
 	// setup go routine to catch a ctrl-c
@@ -117,5 +126,7 @@ func main() {
 		}
 	}()
 	g.setup()
+	clearScreen()
+
 	os.Exit(0)
 }
