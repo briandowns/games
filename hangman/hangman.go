@@ -30,6 +30,7 @@ const wordsLocation = "/usr/share/dict/words"
 var err error
 var foundWord string
 var wordLength int
+var playerGuess string
 var gameWord string
 var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
@@ -41,9 +42,10 @@ func clearScreen() {
 }
 
 type game struct {
-	word      string
-	guessed   map[int]string
-	blankWord string
+	word       string
+	guessed    map[int]string
+	blankWord  string
+	maxGuesses int
 }
 
 func (g *game) wordLength() int { return len(g.word) }
@@ -104,14 +106,25 @@ func (g *game) setup() {
 		}
 		break
 	}
+	g.genBlankWord()
 }
 
 func (g *game) genBlankWord() {
 	var preBlank bytes.Buffer
-	for i := 0; i <= g.wordLength(); i++ {
+	preBlank.Write([]byte("\n "))
+	for i := 1; i <= g.wordLength(); i++ {
 		preBlank.Write([]byte("_ "))
 	}
 	g.blankWord = preBlank.String()
+}
+
+func (g *game) letterInWord(pg string) bool {
+	for _, i := range g.word {
+		if string(i) == pg {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
@@ -126,7 +139,145 @@ func main() {
 		}
 	}()
 	g.setup()
-	clearScreen()
-
+	for {
+		clearScreen()
+		fmt.Println(boards[len(g.guessed)])
+		fmt.Println(g.blankWord)
+		fmt.Print("\nEnter guess: ")
+		fmt.Scanf("%s", &playerGuess)
+		if g.letterInWord(playerGuess) {
+			//
+		} else {
+			clearScreen()
+			g.guessed[len(g.guessed)+1] = playerGuess
+			fmt.Println(boards[len(g.guessed)])
+			fmt.Println(g.blankWord)
+			continue
+		}
+	}
 	os.Exit(0)
+}
+
+// boards is a map that holds the different stages of game play
+var boards = map[int]string{
+	0: `+ Hangman +
+
+
+
+
+
+
+
+
+`,
+	1: `+ Hangman +
+
+
+
+
+
+
+
+ ____|____
+`,
+	2: `+ Hangman +
+
+     |/
+     |
+     |
+     |
+     |
+     |
+ ____|____
+`,
+	3: `+ Hangman +
+     _________
+     |/
+     |
+     |
+     |
+     |
+     |
+ ____|____
+`,
+	4: `+ Hangman +
+     _________
+     |/      |
+     |
+     |
+     |
+     |
+     |
+ ____|____
+`,
+	5: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |
+     |
+     |
+     |
+ ____|____
+`,
+	6: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |       |
+     |
+     |
+     |
+ ____|____
+`,
+	7: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |       |/
+     |
+     |
+     |
+ ____|____
+`,
+	8: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |      \|/
+     |
+     |
+     |
+ ____|____
+`,
+	9: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |      \|/
+     |       |
+     |
+     |
+ ____|____
+`,
+	10: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |      \|/
+     |       |
+     |        \
+     |
+ ____|____
+`,
+	11: `+ Hangman +
+     _________
+     |/      |
+     |      (_)
+     |      \|/
+     |       |
+     |      / \
+     |
+ ____|____
+`,
 }
