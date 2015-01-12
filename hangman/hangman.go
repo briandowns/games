@@ -22,15 +22,18 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"time"
 )
 
 const wordsLocation = "/usr/share/dict/words"
+const maxGuesses = 12
 
 var err error
 var foundWord string
 var wordLength int
 var playerGuess string
+var wordSetupAnswer int
 var gameWord string
 var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
@@ -42,22 +45,25 @@ func clearScreen() {
 }
 
 type game struct {
-	word       string
-	guessed    map[int]string
-	blankWord  string
-	maxGuesses int
+	word      string
+	guessed   map[int]string
+	blankWord string
+	guessCnt  int
 }
 
 func (g *game) wordLength() int { return len(g.word) }
 
 func (g *game) genStats() {
+	if len(g.word) == 0 {
+		os.Exit(1)
+	}
 	var guessCount int
 	var guesses bytes.Buffer
 	for _, v := range g.guessed {
 		guessCount++
 		guesses.Write([]byte(fmt.Sprintf("%s, ", v)))
 	}
-	fmt.Printf("\nGuesses: %d, Guessed: %s", guessCount, guesses.String())
+	fmt.Printf("\nWord: %s, Guesses: %d, Guessed: %s\n", g.word, guessCount, guesses.String())
 	os.Exit(1)
 }
 
@@ -82,14 +88,13 @@ func selectWord(length int) (string, error) {
 
 func (g *game) setup() {
 	fmt.Print("  Press 0 to enter your own word or 1 to generate one: ")
-	var wordSetupAnswer int
 	fmt.Scanf("%d", &wordSetupAnswer)
 	for {
 		switch {
 		case wordSetupAnswer == 0:
 			fmt.Print("  Enter word: ")
 			fmt.Scanf("%s", &gameWord)
-			g.word = gameWord
+			g.word = strings.ToLower(gameWord)
 			break
 		case wordSetupAnswer == 1:
 			fmt.Print("  Enter length of word: ")
@@ -98,7 +103,7 @@ func (g *game) setup() {
 				fmt.Println(err)
 				continue
 			}
-			g.word = foundWord
+			g.word = strings.ToLower(foundWord)
 			break
 		default:
 			fmt.Println("  not a valid entry.  Try again.")
@@ -130,7 +135,10 @@ func (g *game) letterInWord(pg string) bool {
 func main() {
 	clearScreen()
 	fmt.Println("+ Hangman +")
-	g := game{}
+	g := game{
+		guessed:  make(map[int]string),
+		guessCnt: 0,
+	}
 	signal.Notify(signalChan, os.Interrupt)
 	// setup go routine to catch a ctrl-c
 	go func() {
@@ -140,18 +148,25 @@ func main() {
 	}()
 	g.setup()
 	for {
+		if g.guessCnt == maxGuesses {
+			g.genStats()
+		}
 		clearScreen()
 		fmt.Println(boards[len(g.guessed)])
 		fmt.Println(g.blankWord)
 		fmt.Print("\nEnter guess: ")
 		fmt.Scanf("%s", &playerGuess)
 		if g.letterInWord(playerGuess) {
-			//
+			g.guessCnt++
+			g.guessed[g.guessCnt] = playerGuess
+			playerGuess = ""
+			continue
 		} else {
 			clearScreen()
-			g.guessed[len(g.guessed)+1] = playerGuess
+			g.guessed[g.guessCnt] = playerGuess
 			fmt.Println(boards[len(g.guessed)])
 			fmt.Println(g.blankWord)
+			playerGuess = ""
 			continue
 		}
 	}
