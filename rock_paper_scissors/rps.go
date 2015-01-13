@@ -34,6 +34,9 @@ var compStr string
 var err error
 var compAnswer int
 var givenAnswer int
+var answerChan = make(chan *int, 1)
+var validChan = make(chan *int, 1)
+var validResp = make(chan bool, 1)
 var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
 
 // game holds the data collected during game play
@@ -45,11 +48,17 @@ type game struct {
 }
 
 // checkValidAnswer makes sure the given answer is valid
-func checkValidAnswer(pa *int) bool {
-	if *pa == lose || *pa == tie || *pa == win {
-		return true
+func checkValidAnswer() {
+	for {
+		select {
+		case a := <-validChan:
+			if *a == lose || *a == tie || *a == win {
+				validResp <- true
+			} else {
+				validResp <- false
+			}
+		}
 	}
-	return false
 }
 
 // clearScreen runs a shell clear command
@@ -105,12 +114,17 @@ func main() {
 			g.genStats()
 		}
 	}()
+	go checkValidAnswer()
+Loop:
 	for {
 		fmt.Print("\nEnter answer: ")
 		fmt.Scanf("%d", &givenAnswer)
-		if !checkValidAnswer(&givenAnswer) {
-			fmt.Println("invalid answer, try again")
-			continue
+		validChan <- &givenAnswer
+		for i := range validResp {
+			if !i {
+				fmt.Println("invalid answer, try again")
+				break Loop
+			}
 		}
 		g.attempts = g.attempts + 1
 		g.pAnswer = &givenAnswer
