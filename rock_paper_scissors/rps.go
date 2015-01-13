@@ -144,12 +144,15 @@ Loop:
 		case g.cAnswer%3+1 == *g.pAnswer:
 			g.results = append(g.results, win)
 			fmt.Printf("Computer: %s  WIN!\n", compStr)
+			time.Sleep(800 * time.Millisecond)
 		case *g.pAnswer%3+1 == g.cAnswer:
 			g.results = append(g.results, lose)
 			fmt.Printf("Computer: %s  LOSE\n", compStr)
+			time.Sleep(800 * time.Millisecond)
 		default:
 			g.results = append(g.results, tie)
 			fmt.Printf("Computer: %s  TIE\n", compStr)
+			time.Sleep(800 * time.Millisecond)
 		}
 	}
 }
