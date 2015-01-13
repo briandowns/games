@@ -16,6 +16,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
 	"os"
@@ -70,6 +71,14 @@ func clearScreen() {
 	c := exec.Command("clear")
 	c.Stdout = os.Stdout
 	c.Run()
+}
+
+func anyKeyToContinue() {
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	if input != "" {
+		clearScreen()
+	}
 }
 
 // genStats outputs the game play statistics
@@ -151,15 +160,19 @@ Loop:
 		case g.cAnswer%3+1 == *g.pAnswer:
 			g.results = append(g.results, win)
 			fmt.Printf("Computer: %s  WIN!\n", compStr)
-			time.Sleep(800 * time.Millisecond)
+			anyKeyToContinue()
+			continue Loop
 		case *g.pAnswer%3+1 == g.cAnswer:
 			g.results = append(g.results, lose)
 			fmt.Printf("Computer: %s  LOSE\n", compStr)
-			time.Sleep(800 * time.Millisecond)
+			anyKeyToContinue()
+			continue Loop
+
 		default:
 			g.results = append(g.results, tie)
 			fmt.Printf("Computer: %s  TIE\n", compStr)
-			time.Sleep(800 * time.Millisecond)
+			anyKeyToContinue()
+			continue Loop
 		}
 	}
 }
