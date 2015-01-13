@@ -34,10 +34,14 @@ var compStr string
 var err error
 var compAnswer int
 var givenAnswer int
-var answerChan = make(chan *int, 1)
-var validChan = make(chan *int, 1)
-var validResp = make(chan bool, 1)
-var signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
+
+// channel variables
+var (
+	answerChan = make(chan *int, 1)
+	validChan  = make(chan *int, 1)      // channel to receive answer for validity check
+	validResp  = make(chan bool, 1)      // channel to send validity answer on
+	signalChan = make(chan os.Signal, 1) // channel to catch ctrl-c
+)
 
 // game holds the data collected during game play
 type game struct {
