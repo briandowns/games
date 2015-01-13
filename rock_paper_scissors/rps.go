@@ -73,6 +73,7 @@ func clearScreen() {
 	c.Run()
 }
 
+// anyKeyToContinue will wait for the user to hit a key
 func anyKeyToContinue() {
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -96,6 +97,24 @@ func (g *game) genStats() {
 	}
 	fmt.Printf("\n\nRounds: %d, Wins: %d, Loses: %d, Ties: %d\n\n", len(g.results), wins, loses, ties)
 	os.Exit(1) // Since it was a ctrl-c, exit non-zero
+}
+
+// evalAnswer will provide the feedback on right, wrong, or tie
+func (g *game) evalAnswer() {
+	switch {
+	case g.cAnswer%3+1 == *g.pAnswer:
+		g.results = append(g.results, win)
+		fmt.Printf("Computer: %s  WIN!\n", compStr)
+		anyKeyToContinue()
+	case *g.pAnswer%3+1 == g.cAnswer:
+		g.results = append(g.results, lose)
+		fmt.Printf("Computer: %s  LOSE\n", compStr)
+		anyKeyToContinue()
+	default:
+		g.results = append(g.results, tie)
+		fmt.Printf("Computer: %s  TIE\n", compStr)
+		anyKeyToContinue()
+	}
 }
 
 // genComputerAnswer will randomly generate a number used as an answer
@@ -156,23 +175,6 @@ Loop:
 		}
 
 		g.cAnswer = compAnswer
-		switch {
-		case g.cAnswer%3+1 == *g.pAnswer:
-			g.results = append(g.results, win)
-			fmt.Printf("Computer: %s  WIN!\n", compStr)
-			anyKeyToContinue()
-			continue Loop
-		case *g.pAnswer%3+1 == g.cAnswer:
-			g.results = append(g.results, lose)
-			fmt.Printf("Computer: %s  LOSE\n", compStr)
-			anyKeyToContinue()
-			continue Loop
-
-		default:
-			g.results = append(g.results, tie)
-			fmt.Printf("Computer: %s  TIE\n", compStr)
-			anyKeyToContinue()
-			continue Loop
-		}
+		g.evalAnswer()
 	}
 }
