@@ -106,11 +106,13 @@ func genComputerAnswer() (int, string, error) {
 
 func main() {
 	clearScreen()
+
 	fmt.Print("+ Rock-Paper-Scissors (Enter 0 for ROCK, 1 for PAPER, and 2 for SCISSORS)\n")
 	g := game{
 		attempts: 0,
 		results:  make([]int, 0),
 	}
+
 	signal.Notify(signalChan, os.Interrupt)
 	// setup go routine to catch a ctrl-c
 	go func() {
@@ -118,13 +120,16 @@ func main() {
 			g.genStats()
 		}
 	}()
+
 	go checkValidAnswer()
+
 Loop:
 	for {
 		clearScreen()
 		fmt.Print("+ Rock-Paper-Scissors (Enter 0 for ROCK, 1 for PAPER, and 2 for SCISSORS)\n")
 		fmt.Print("\nEnter answer: ")
 		fmt.Scanf("%d", &givenAnswer)
+
 		validChan <- &givenAnswer
 		for i := range validResp {
 			if !i {
@@ -133,12 +138,14 @@ Loop:
 			}
 			break
 		}
+
 		g.attempts = g.attempts + 1
 		g.pAnswer = &givenAnswer
 		if compAnswer, compStr, err = genComputerAnswer(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
 		g.cAnswer = compAnswer
 		switch {
 		case g.cAnswer%3+1 == *g.pAnswer:
