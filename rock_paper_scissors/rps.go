@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This is a basic implementation of the game rock, paper, scissors.
+// This is an implementation of the game rock, paper, scissors.
 package main
 
 import (
@@ -121,6 +121,8 @@ func main() {
 	go checkValidAnswer()
 Loop:
 	for {
+		clearScreen()
+		fmt.Print("+ Rock-Paper-Scissors (Enter 0 for ROCK, 1 for PAPER, and 2 for SCISSORS)\n")
 		fmt.Print("\nEnter answer: ")
 		fmt.Scanf("%d", &givenAnswer)
 		validChan <- &givenAnswer
