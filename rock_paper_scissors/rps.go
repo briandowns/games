@@ -123,8 +123,9 @@ Loop:
 		for i := range validResp {
 			if !i {
 				fmt.Println("invalid answer, try again")
-				break Loop
+				continue Loop
 			}
+			break
 		}
 		g.attempts = g.attempts + 1
 		g.pAnswer = &givenAnswer
